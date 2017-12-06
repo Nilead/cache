@@ -54,7 +54,7 @@ class PhpFileCache extends FileCache
     {
         $value = $this->includeFileForId($id);
 
-        if (! $value) {
+        if ($value === null) {
             return false;
         }
 
@@ -72,7 +72,7 @@ class PhpFileCache extends FileCache
     {
         $value = $this->includeFileForId($id);
 
-        if (! $value) {
+        if ($value === null) {
             return false;
         }
 
@@ -88,7 +88,7 @@ class PhpFileCache extends FileCache
             $lifeTime = time() + $lifeTime;
         }
 
-        $filename  = $this->getFilename($id);
+        $filename = $this->getFilename($id);
 
         $value = [
             'lifetime'  => $lifeTime,
@@ -96,11 +96,11 @@ class PhpFileCache extends FileCache
         ];
 
         if (is_object($data) && method_exists($data, '__set_state')) {
-            $value  = var_export($value, true);
-            $code   = sprintf('<?php return %s;', $value);
+            $value = var_export($value, true);
+            $code  = sprintf('<?php return %s;', $value);
         } else {
-            $value  = var_export(serialize($value), true);
-            $code   = sprintf('<?php return unserialize(%s);', $value);
+            $value = var_export(serialize($value), true);
+            $code  = sprintf('<?php return unserialize(%s);', $value);
         }
 
         return $this->writeFile($filename, $code);
@@ -109,9 +109,9 @@ class PhpFileCache extends FileCache
     /**
      * @param string $id
      *
-     * @return array|false
+     * @return array|null
      */
-    private function includeFileForId($id)
+    private function includeFileForId(string $id) : ?array
     {
         $fileName = $this->getFilename($id);
 
@@ -122,8 +122,8 @@ class PhpFileCache extends FileCache
 
         restore_error_handler();
 
-        if (! isset($value['lifetime'])) {
-            return false;
+        if ( ! isset($value['lifetime'])) {
+            return null;
         }
 
         return $value;

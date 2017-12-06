@@ -134,8 +134,7 @@ abstract class FileCache extends CacheProvider
         $hash = hash('sha256', $id);
 
         // This ensures that the filename is unique and that there are no invalid chars in it.
-        if (
-            '' === $id
+        if ('' === $id
             || ((strlen($id) * 2 + $this->extensionStringLength) > 255)
             || ($this->isRunningOnWindows && ($this->directoryStringLength + 4 + strlen($id) * 2 + $this->extensionStringLength) > 258)
         ) {
@@ -195,7 +194,7 @@ abstract class FileCache extends CacheProvider
     {
         $usage = 0;
         foreach ($this->getIterator() as $name => $file) {
-            if (! $file->isDir() && $this->isFilenameEndingWithExtension($name)) {
+            if ( ! $file->isDir() && $this->isFilenameEndingWithExtension($name)) {
                 $usage += $file->getSize();
             }
         }
@@ -217,10 +216,10 @@ abstract class FileCache extends CacheProvider
      * @param string $path
      * @return bool TRUE on success or if path already exists, FALSE if path cannot be created.
      */
-    private function createPathIfNeeded($path)
+    private function createPathIfNeeded(string $path) : bool
     {
         if ( ! is_dir($path)) {
-            if (false === @mkdir($path, 0777 & (~$this->umask), true) && !is_dir($path)) {
+            if (false === @mkdir($path, 0777 & (~$this->umask), true) && ! is_dir($path)) {
                 return false;
             }
         }
@@ -236,7 +235,7 @@ abstract class FileCache extends CacheProvider
      *
      * @return bool TRUE on success, FALSE if path cannot be created, if path is not writable or an any other error.
      */
-    protected function writeFile($filename, $content)
+    protected function writeFile(string $filename, string $content) : bool
     {
         $filepath = pathinfo($filename, PATHINFO_DIRNAME);
 
@@ -252,6 +251,7 @@ abstract class FileCache extends CacheProvider
         @chmod($tmpFile, 0666 & (~$this->umask));
 
         if (file_put_contents($tmpFile, $content) !== false) {
+            @chmod($tmpFile, 0666 & (~$this->umask));
             if (@rename($tmpFile, $filename)) {
                 return true;
             }
@@ -265,7 +265,7 @@ abstract class FileCache extends CacheProvider
     /**
      * @return \Iterator
      */
-    private function getIterator()
+    private function getIterator() : \Iterator
     {
         return new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator($this->directory, \FilesystemIterator::SKIP_DOTS),
@@ -278,7 +278,7 @@ abstract class FileCache extends CacheProvider
      *
      * @return bool
      */
-    private function isFilenameEndingWithExtension($name)
+    private function isFilenameEndingWithExtension(string $name) : bool
     {
         return '' === $this->extension
             || strrpos($name, $this->extension) === (strlen($name) - $this->extensionStringLength);

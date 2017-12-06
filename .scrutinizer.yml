@@ -1,3 +1,8 @@
+build:
+    environment:
+        php:
+            version: 7.1.0
+
 before_commands:
     - "composer install --no-dev --prefer-source"
 
@@ -32,10 +37,6 @@ tools:
         enabled: true
         excluded_dirs: ["vendor"]
     php_analyzer:
-        enabled: true
-        filter:
-            paths: ["lib/*", "tests/*"]
-    php_hhvm:
         enabled: true
         filter:
             paths: ["lib/*", "tests/*"]

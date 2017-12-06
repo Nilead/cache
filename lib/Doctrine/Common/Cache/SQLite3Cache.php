@@ -59,7 +59,7 @@ class SQLite3Cache extends CacheProvider
     /**
      * Constructor.
      *
-     * Calling the constructor will ensure that the database file and table 
+     * Calling the constructor will ensure that the database file and table
      * exist and will create both if they don't.
      *
      * @param SQLite3 $sqlite
@@ -70,15 +70,20 @@ class SQLite3Cache extends CacheProvider
         $this->sqlite = $sqlite;
         $this->table  = (string) $table;
 
-        list($id, $data, $exp) = $this->getFields();
+        $this->ensureTableExists();
+    }
 
-        return $this->sqlite->exec(sprintf(
-            'CREATE TABLE IF NOT EXISTS %s(%s TEXT PRIMARY KEY NOT NULL, %s BLOB, %s INTEGER)',
-            $table,
-            $id,
-            $data,
-            $exp
-        ));
+    private function ensureTableExists() : void
+    {
+        $this->sqlite->exec(
+            sprintf(
+                'CREATE TABLE IF NOT EXISTS %s(%s TEXT PRIMARY KEY NOT NULL, %s BLOB, %s INTEGER)',
+                $this->table,
+                static::ID_FIELD,
+                static::DATA_FIELD,
+                static::EXPIRATION_FIELD
+            )
+        );
     }
 
     /**
@@ -88,7 +93,7 @@ class SQLite3Cache extends CacheProvider
     {
         $item = $this->findById($id);
 
-        if (!$item) {
+        if ( ! $item) {
             return false;
         }
 
@@ -163,11 +168,11 @@ class SQLite3Cache extends CacheProvider
      *
      * @return array|null
      */
-    private function findById($id, $includeData = true)
+    private function findById($id, bool $includeData = true) : ?array
     {
         list($idField) = $fields = $this->getFields();
 
-        if (!$includeData) {
+        if ( ! $includeData) {
             $key = array_search(static::DATA_FIELD, $fields);
             unset($fields[$key]);
         }
@@ -201,7 +206,7 @@ class SQLite3Cache extends CacheProvider
      *
      * @return array
      */
-    private function getFields()
+    private function getFields() : array
     {
         return [static::ID_FIELD, static::DATA_FIELD, static::EXPIRATION_FIELD];
     }
@@ -213,7 +218,7 @@ class SQLite3Cache extends CacheProvider
      *
      * @return bool
      */
-    private function isExpired(array $item)
+    private function isExpired(array $item) : bool
     {
         return isset($item[static::EXPIRATION_FIELD]) &&
             $item[self::EXPIRATION_FIELD] !== null &&

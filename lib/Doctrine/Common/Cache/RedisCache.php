@@ -78,7 +78,7 @@ class RedisCache extends CacheProvider
         $fetchedItems = array_combine($keys, $this->redis->mget($keys));
 
         // Redis mget returns false for keys that do not exist. So we need to filter those out unless it's the real data.
-        $foundItems   = [];
+        $foundItems = [];
 
         foreach ($fetchedItems as $key => $value) {
             if (false !== $value || $this->redis->exists($key)) {
@@ -99,7 +99,7 @@ class RedisCache extends CacheProvider
 
             // Keys have lifetime, use SETEX for each of them
             foreach ($keysAndValues as $key => $value) {
-                if (!$this->redis->setex($key, $lifetime, $value)) {
+                if ( ! $this->redis->setex($key, $lifetime, $value)) {
                     $success = false;
                 }
             }
@@ -142,6 +142,14 @@ class RedisCache extends CacheProvider
     /**
      * {@inheritdoc}
      */
+    protected function doDeleteMultiple(array $keys)
+    {
+        return $this->redis->delete($keys) >= 0;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     protected function doFlush()
     {
         return $this->redis->flushDB();
@@ -171,10 +179,6 @@ class RedisCache extends CacheProvider
      */
     protected function getSerializerValue()
     {
-        if (defined('HHVM_VERSION')) {
-            return Redis::SERIALIZER_PHP;
-        }
-
         if (defined('Redis::SERIALIZER_IGBINARY') && extension_loaded('igbinary')) {
             return Redis::SERIALIZER_IGBINARY;
         }

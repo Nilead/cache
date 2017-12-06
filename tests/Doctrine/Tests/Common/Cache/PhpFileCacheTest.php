@@ -3,6 +3,7 @@
 namespace Doctrine\Tests\Common\Cache;
 
 use Doctrine\Common\Cache\Cache;
+use Doctrine\Common\Cache\CacheProvider;
 use Doctrine\Common\Cache\PhpFileCache;
 
 /**
@@ -10,7 +11,7 @@ use Doctrine\Common\Cache\PhpFileCache;
  */
 class PhpFileCacheTest extends BaseFileCacheTest
 {
-    public function provideDataToCache()
+    public function provideDataToCache() : array
     {
         $data = parent::provideDataToCache();
 
@@ -23,7 +24,7 @@ class PhpFileCacheTest extends BaseFileCacheTest
         return $data;
     }
 
-    public function testImplementsSetState()
+    public function testImplementsSetState() : void
     {
         $cache = $this->_getCacheDriver();
 
@@ -31,56 +32,56 @@ class PhpFileCacheTest extends BaseFileCacheTest
         $cache->save('test_set_state', new SetStateClass([1,2,3]));
 
         //Test __set_state call
-        $this->assertCount(0, SetStateClass::$values);
+        self::assertCount(0, SetStateClass::$values);
 
         // Test fetch
         $value = $cache->fetch('test_set_state');
-        $this->assertInstanceOf('Doctrine\Tests\Common\Cache\SetStateClass', $value);
-        $this->assertEquals([1,2,3], $value->getValue());
+        self::assertInstanceOf(SetStateClass::class, $value);
+        self::assertEquals([1,2,3], $value->getValue());
 
         //Test __set_state call
-        $this->assertCount(1, SetStateClass::$values);
+        self::assertCount(1, SetStateClass::$values);
 
         // Test contains
-        $this->assertTrue($cache->contains('test_set_state'));
+        self::assertTrue($cache->contains('test_set_state'));
     }
 
     /**
      * @group 154
      */
-    public function testNotImplementsSetState()
+    public function testNotImplementsSetState() : void
     {
         $cache = $this->_getCacheDriver();
 
         $cache->save('test_not_set_state', new NotSetStateClass([5,6,7]));
-        $this->assertEquals(new NotSetStateClass([5,6,7]), $cache->fetch('test_not_set_state'));
+        self::assertEquals(new NotSetStateClass([5,6,7]), $cache->fetch('test_not_set_state'));
     }
 
     /**
      * @group 154
      */
-    public function testNotImplementsSetStateInArray()
+    public function testNotImplementsSetStateInArray() : void
     {
         $cache = $this->_getCacheDriver();
 
         $cache->save('test_not_set_state_in_array', [new NotSetStateClass([4,3,2])]);
-        $this->assertEquals([new NotSetStateClass([4,3,2])], $cache->fetch('test_not_set_state_in_array'));
-        $this->assertTrue($cache->contains('test_not_set_state_in_array'));
+        self::assertEquals([new NotSetStateClass([4,3,2])], $cache->fetch('test_not_set_state_in_array'));
+        self::assertTrue($cache->contains('test_not_set_state_in_array'));
     }
 
-    public function testGetStats()
+    public function testGetStats() : void
     {
         $cache = $this->_getCacheDriver();
         $stats = $cache->getStats();
 
-        $this->assertNull($stats[Cache::STATS_HITS]);
-        $this->assertNull($stats[Cache::STATS_MISSES]);
-        $this->assertNull($stats[Cache::STATS_UPTIME]);
-        $this->assertEquals(0, $stats[Cache::STATS_MEMORY_USAGE]);
-        $this->assertGreaterThan(0, $stats[Cache::STATS_MEMORY_AVAILABLE]);
+        self::assertNull($stats[Cache::STATS_HITS]);
+        self::assertNull($stats[Cache::STATS_MISSES]);
+        self::assertNull($stats[Cache::STATS_UPTIME]);
+        self::assertEquals(0, $stats[Cache::STATS_MEMORY_USAGE]);
+        self::assertGreaterThan(0, $stats[Cache::STATS_MEMORY_AVAILABLE]);
     }
 
-    protected function _getCacheDriver()
+    protected function _getCacheDriver() : CacheProvider
     {
         return new PhpFileCache($this->directory);
     }

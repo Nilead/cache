@@ -2,6 +2,7 @@
 
 namespace Doctrine\Tests\Common\Cache;
 
+use Doctrine\Common\Cache\CacheProvider;
 use Doctrine\Common\Cache\ZendDataCache;
 
 /**
@@ -9,22 +10,22 @@ use Doctrine\Common\Cache\ZendDataCache;
  */
 class ZendDataCacheTest extends CacheTest
 {
-    protected function setUp()
+    protected function setUp() : void
     {
         if ('apache2handler' !== php_sapi_name()) {
             $this->markTestSkipped('Zend Data Cache only works in apache2handler SAPI.');
         }
     }
 
-    public function testGetStats()
+    public function testGetStats() : void
     {
         $cache = $this->_getCacheDriver();
         $stats = $cache->getStats();
 
-        $this->assertNull($stats);
+        self::assertNull($stats);
     }
 
-    protected function _getCacheDriver()
+    protected function _getCacheDriver() : CacheProvider
     {
         return new ZendDataCache();
     }

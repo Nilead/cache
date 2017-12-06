@@ -25,6 +25,8 @@ namespace Doctrine\Common\Cache;
  * @link   www.doctrine-project.org
  * @since  1.6
  * @author Daniel Gorgan <danut007ro@gmail.com>
+ *
+ * @deprecated
  */
 interface MultiPutCache
 {
@@ -37,5 +39,5 @@ interface MultiPutCache
      *
      * @return bool TRUE if the operation was successful, FALSE if it wasn't.
      */
-    function saveMultiple(array $keysAndValues, $lifetime = 0);
+    public function saveMultiple(array $keysAndValues, $lifetime = 0);
 }

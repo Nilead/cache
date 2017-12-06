@@ -28,8 +28,9 @@ namespace Doctrine\Common\Cache;
  * @author Jonathan Wage <jonwage@gmail.com>
  * @author Roman Borschel <roman@code-factory.org>
  * @author Fabio B. Silva <fabio.bat.silva@gmail.com>
+ * @author Benoit Burnichon <bburnichon@gmail.com>
  */
-abstract class CacheProvider implements Cache, FlushableCache, ClearableCache, MultiGetCache, MultiPutCache
+abstract class CacheProvider implements Cache, FlushableCache, ClearableCache, MultiOperationCache
 {
     const DOCTRINE_NAMESPACE_CACHEKEY = 'DoctrineNamespaceCacheKey[%s]';
 
@@ -86,7 +87,7 @@ abstract class CacheProvider implements Cache, FlushableCache, ClearableCache, M
         if (empty($keys)) {
             return [];
         }
-        
+
         // note: the array_combine() is in place to keep an association between our $keys and the $namespacedKeys
         $namespacedKeys = array_combine($keys, array_map([$this, 'getNamespacedId'], $keys));
         $items          = $this->doFetchMultiple($namespacedKeys);
@@ -130,6 +131,14 @@ abstract class CacheProvider implements Cache, FlushableCache, ClearableCache, M
     public function save($id, $data, $lifeTime = 0)
     {
         return $this->doSave($this->getNamespacedId($id), $data, $lifeTime);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteMultiple(array $keys)
+    {
+        return $this->doDeleteMultiple(array_map(array($this, 'getNamespacedId'), $keys));
     }
 
     /**
@@ -180,9 +189,9 @@ abstract class CacheProvider implements Cache, FlushableCache, ClearableCache, M
      *
      * @return string The namespaced id.
      */
-    private function getNamespacedId($id)
+    private function getNamespacedId(string $id) : string
     {
-        $namespaceVersion  = $this->getNamespaceVersion();
+        $namespaceVersion = $this->getNamespaceVersion();
 
         return sprintf('%s[%s][%s]', $this->namespace, $id, $namespaceVersion);
     }
@@ -192,7 +201,7 @@ abstract class CacheProvider implements Cache, FlushableCache, ClearableCache, M
      *
      * @return string
      */
-    private function getNamespaceCacheKey()
+    private function getNamespaceCacheKey() : string
     {
         return sprintf(self::DOCTRINE_NAMESPACE_CACHEKEY, $this->namespace);
     }
@@ -202,14 +211,14 @@ abstract class CacheProvider implements Cache, FlushableCache, ClearableCache, M
      *
      * @return integer
      */
-    private function getNamespaceVersion()
+    private function getNamespaceVersion() : int
     {
         if (null !== $this->namespaceVersion) {
             return $this->namespaceVersion;
         }
 
-        $namespaceCacheKey = $this->getNamespaceCacheKey();
-        $this->namespaceVersion = $this->doFetch($namespaceCacheKey) ?: 1;
+        $namespaceCacheKey      = $this->getNamespaceCacheKey();
+        $this->namespaceVersion = (int) $this->doFetch($namespaceCacheKey) ?: 1;
 
         return $this->namespaceVersion;
     }
@@ -265,7 +274,7 @@ abstract class CacheProvider implements Cache, FlushableCache, ClearableCache, M
         $success = true;
 
         foreach ($keysAndValues as $key => $value) {
-            if (!$this->doSave($key, $value, $lifetime)) {
+            if ( ! $this->doSave($key, $value, $lifetime)) {
                 $success = false;
             }
         }
@@ -284,6 +293,26 @@ abstract class CacheProvider implements Cache, FlushableCache, ClearableCache, M
      * @return bool TRUE if the entry was successfully stored in the cache, FALSE otherwise.
      */
     abstract protected function doSave($id, $data, $lifeTime = 0);
+
+    /**
+     * Default implementation of doDeleteMultiple. Each driver that supports multi-delete should override it.
+     *
+     * @param array $keys Array of keys to delete from cache
+     *
+     * @return bool TRUE if the operation was successful, FALSE if it wasn't
+     */
+    protected function doDeleteMultiple(array $keys)
+    {
+        $success = true;
+
+        foreach ($keys as $key) {
+            if ( ! $this->doDelete($key)) {
+                $success = false;
+            }
+        }
+
+        return $success;
+    }
 
     /**
      * Deletes a cache entry.

@@ -44,11 +44,7 @@ class RedisCache extends CacheProvider
      */
     public function setRedis(Redis $redis)
     {
-        // The redis object is injected from an external service
-        // Serializer option should be set outside
-        // We should not force the serializer option here
-        // This code is left here for reference only
-//        $redis->setOption(Redis::OPT_SERIALIZER, $this->getSerializerValue());
+        $redis->setOption(Redis::OPT_SERIALIZER, $this->getSerializerValue());
         $this->redis = $redis;
     }
 

@@ -48,7 +48,7 @@ with PHP so no additional setup is required in order to use it.
 ApcuCache
 ---------
 
-The ``ApcCache`` driver uses the ``apcu_fetch``, ``apcu_exists``, etc. functions that come
+The ``ApcuCache`` driver uses the ``apcu_fetch``, ``apcu_exists``, etc. functions that come
 with PHP so no additional setup is required in order to use it.
 
 .. code-block:: php
@@ -101,8 +101,8 @@ The ``FilesystemCache`` driver stores the cache data on the local filesystem.
 .. code-block:: php
     $cache = new FilesystemCache('/path/to/cache/directory');
 
-MemecacheCache
---------------
+MemcacheCache
+-------------
 
 The ``MemcacheCache`` drivers stores the cache data in Memcache.
 
